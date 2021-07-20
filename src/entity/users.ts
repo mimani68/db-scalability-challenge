@@ -9,13 +9,10 @@ export class User {
     id!: string | number;
 
     @Column()
-    firstName!: string;
+    first_name!: string;
 
     @Column()
-    lastName!: string;
-
-    @Column()
-    age!: number;
+    last_name!: string;
 
     @OneToMany(() => Transaction, el => el.user)
     transactions!: Transaction[];
