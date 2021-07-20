@@ -1,10 +1,12 @@
-import { object, string } from 'joi'
-import { FindOneOptions } from "typeorm";
+import { FindOneOptions } from 'typeorm';
 
-import { db } from "../db/psql";
-import { User } from "../entity/users";
-import { ErrorHandler } from "../utils/error/custom.error";
-import { log } from '../utils/log';
+import config from '../config';
+import { db               } from '../db/psql';
+import { User             } from '../entity/users';
+import { ErrorHandler     } from '../utils/error/custom.error';
+import { log              } from '../utils/log';
+import { stringToUniqeKey } from '../utils/rnd_number';
+import { expireatAsync, getAsync, setAsync } from '../utils/redis';
 
 /**
  * @param  {string|number} userId
@@ -14,33 +16,23 @@ import { log } from '../utils/log';
 export async function findUserById(userId: string | number, time: string): Promise<User|ErrorHandler>{
   /*
   | 
-  | 01 Validating incoming request
+  | 01 Retrive data from cache
   | 
-  */
-  if ( !userId ) {
-    return new ErrorHandler('UserId is empty');
+  */  
+  let key: string = stringToUniqeKey(userId, time)
+  let cacheObject: any = getAsync(key)
+  try {
+    let value = JSON.parse(cacheObject)
+    log('Loading cache value with key [' + key + ']')
+    log(value)
+    return value
+  } catch (error) {
+    log('The key with value [' + key + '] is not exists in cache')
   }
-  if ( !time ) {
-    return new ErrorHandler('Time period is empty');
-  }
-  const schema = object({
-    id: string()
-        .alphanum()
-        .min(3)
-        .max(30)
-        .required(),
-    time: string()
-        .alphanum()
-        .min(3)
-        .max(30)
-        .required()
-  })
-  let isRequestValid = schema.valid()
-  if ( !isRequestValid ) return new ErrorHandler('Schema is invalid');
 
   /*
   | 
-  | 02 Validation process
+  | 02 Retrive data from db
   | 
   */
   let options: FindOneOptions<User> = {
@@ -51,6 +43,15 @@ export async function findUserById(userId: string | number, time: string): Promi
       if ( !value ) {
         return Promise.reject()
       }
+      /*
+      | 
+      | 03 Store cache for db
+      | 
+      */
+      setAsync(key, JSON.stringify(value))
+        .then( e => {
+          expireatAsync(`${e}`, config.EXPIRE_CACHE_AFTER_MS)
+        })
       return value
     })
     .catch(err=>{
