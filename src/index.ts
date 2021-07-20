@@ -6,6 +6,7 @@ import {
 import {
   loadSync
 } from '@grpc/proto-loader';
+import { yellowBright, greenBright } from 'chalk';
 
 import config from "./config";
 import {
@@ -36,15 +37,17 @@ export function getServer() {
 
 if (require.main === module) {
   let routeServer = getServer();
-  routeServer.bindAsync(config.ADDRESS, ServerCredentials.createInsecure(), () => {
-    // let argv = parseArgs(process.argv, {
-    //   string: 'db_path'
-    // });
-    // fs.readFile(path.resolve(argv.db_path), function (err, data) {
-    //   if (err) throw err;
-    //   feature_list = JSON.parse(data);
-    //   routeServer.start();
-    // });
+  routeServer.bindAsync(config.ADDRESS, ServerCredentials.createInsecure(), (err: any) => {
+    if ( err ) {
+      console.error(err)
+      throw new Error(err)
+    }
     routeServer.start();
-  });
+    console.log(`
+-------------------------------------------------------
+  ${ greenBright(process.env.npm_package_name)}: v${ process.env.npm_package_version }
+  Server start on address ${ yellowBright(config.ADDRESS) }
+-------------------------------------------------------
+    `);
+  })
 }
