@@ -3,6 +3,11 @@ import { UserRequestDto } from "../dto/user_detail.dto";
 
 export function getUserDetails(call: any) {
   call.on('data', async function(req: UserRequestDto) {
+    /*
+    | 
+    | 01 Validating incoming request
+    | 
+    */
     if ( !req.id ) {
       call.write({
         message: 'User details in necessory'
@@ -13,12 +18,9 @@ export function getUserDetails(call: any) {
         message: 'Time peroid in necessory'
       })
     }
-    let e = await findUserById(12);
+    let e = await findUserById(req.id, req.time);
     call.write({
-      location: {
-        latitude: 12,
-        longitude: 12
-      },
+      data: e,
       message: 'salam'
     });
   });

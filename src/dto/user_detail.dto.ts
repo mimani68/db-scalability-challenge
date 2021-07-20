@@ -1,6 +1,10 @@
 export class UserRequestDto {
-  id?: string;
-  time?: string;
+  id: string | number;
+  time: string;
+  constructor(id: string | number, time: string) {
+    this.id = id;
+    this.time = time;
+  }
 }
 
 export class UserResponseDto {

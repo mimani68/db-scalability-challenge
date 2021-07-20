@@ -1,19 +1,27 @@
-import { db } from "../db/psql";
 import { object, string } from 'joi'
-import { User } from "../entity/users";
 import { FindOneOptions } from "typeorm";
+
+import { db } from "../db/psql";
+import { User } from "../entity/users";
+import { ErrorHandler } from "../utils/error/custom.error";
+import { log } from '../utils/log';
 
 /**
  * @param  {string|number} userId
  * @param  {string} time
  * @returns Promise
  */
-export async function findUserById(userId: string | number, time: string): Promise<User|null|undefined>{
+export async function findUserById(userId: string | number, time: string): Promise<User|ErrorHandler>{
+  /*
+  | 
+  | 01 Validating incoming request
+  | 
+  */
   if ( !userId ) {
-    return null;
+    return new ErrorHandler('UserId is empty');
   }
   if ( !time ) {
-    return null;
+    return new ErrorHandler('Time period is empty');
   }
   const schema = object({
     id: string()
@@ -28,9 +36,25 @@ export async function findUserById(userId: string | number, time: string): Promi
         .required()
   })
   let isRequestValid = schema.valid()
-  if ( !isRequestValid ) return null
+  if ( !isRequestValid ) return new ErrorHandler('Schema is invalid');
+
+  /*
+  | 
+  | 02 Validation process
+  | 
+  */
   let options: FindOneOptions<User> = {
     select: ['lastName']
   }
-  return await db.getRepository(User).findOne(userId, options);
+  return await db.getRepository(User).findOne(userId, options)
+    .then( (value: any) => {
+      if ( !value ) {
+        return Promise.reject()
+      }
+      return value
+    })
+    .catch(err=>{
+      log(err)
+      return new ErrorHandler('Unable to find value or the table is empty in database')
+    });
 }

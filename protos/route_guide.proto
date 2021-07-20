@@ -1,5 +1,7 @@
 syntax = "proto3";
 
+import "google/protobuf/any.proto";
+
 option java_multiple_files = true;
 option java_package = "io.grpc.examples.routeguide";
 option java_outer_classname = "RouteGuideProto";
@@ -8,20 +10,21 @@ option objc_class_prefix = "RTG";
 package routeguide;
 
 service RouteGuide {
-  rpc getUserDetails(stream UserRequest) returns (stream UserResponse) {}
+  rpc getUserDetails(string UserRequest) returns (string UserResponse) {}
 }
 
 message UserRequest {
   string id = 1;
-  stream time = 2;
+  string time = 2;
 }
 
 message Payload {
-  string name = 1;
-  stream location = 2;
+  string firstname = 1;
+  string lastname = 2;
 }
 
 message UserResponse {
-  Payload optional data = 1;
-  string message = 2;
+  string message = 1;
+  // Payload optional data = 2;
+  repeated google.protobuf.Any data = 2;
 }
