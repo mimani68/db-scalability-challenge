@@ -86,7 +86,6 @@ services:
             POSTGRESQL_USERNAME: user
             POSTGRESQL_PASSWORD: test
             POSTGRESQL_DATABASE: app
-            ALLOW_EMPTY_PASSWORD: 'no'
         healthcheck:
             test: ["CMD-SHELL", "pg_isready -U postgres"]
             interval: 10s
@@ -105,9 +104,8 @@ services:
             POSTGRESQL_REPLICATION_USER: repl_user
             POSTGRESQL_REPLICATION_PASSWORD: repl_password
             POSTGRESQL_MASTER_HOST: db_master
-            POSTGRESQL_PASSWORD: test
             POSTGRESQL_MASTER_PORT_NUMBER: 5432
-            ALLOW_EMPTY_PASSWORD: 'no'
+            ALLOW_EMPTY_PASSWORD: 'yes'
         depends_on:
             - db_master
         healthcheck:
@@ -128,9 +126,8 @@ services:
             POSTGRESQL_REPLICATION_USER: repl_user
             POSTGRESQL_REPLICATION_PASSWORD: repl_password
             POSTGRESQL_MASTER_HOST: db_master
-            POSTGRESQL_PASSWORD: test
             POSTGRESQL_MASTER_PORT_NUMBER: 5432
-            ALLOW_EMPTY_PASSWORD: 'no'
+            ALLOW_EMPTY_PASSWORD: 'yes'
         depends_on:
             - db_master
         healthcheck:
@@ -151,9 +148,8 @@ services:
             POSTGRESQL_REPLICATION_USER: repl_user
             POSTGRESQL_REPLICATION_PASSWORD: repl_password
             POSTGRESQL_MASTER_HOST: db_master
-            POSTGRESQL_PASSWORD: test
             POSTGRESQL_MASTER_PORT_NUMBER: 5432
-            ALLOW_EMPTY_PASSWORD: 'no'
+            ALLOW_EMPTY_PASSWORD: 'yes'
         depends_on:
             - db_master
         healthcheck:
@@ -171,9 +167,11 @@ services:
         restart: always
         labels:
             - "traefik.enable=true"
-            - "traefik.http.routers.storage.rule=Host(`db.localhost`) && PathPrefix(`/adminer`)"
+            - "traefik.http.routers.storage_rt.entrypoints=web"
+            - "traefik.http.routers.storage_rt.middlewares=strip_url_adminer@docker"
+            - "traefik.http.routers.storage_rt.rule=PathPrefix(`/adminer`)"
             - "traefik.http.services.storage.loadbalancer.server.port=8080"
-            - "traefik.http.routers.storage.entrypoints=web"
+            - "traefik.http.middlewares.strip_url_adminer.stripprefix.prefixes=/adminer"
         networks:
             - internal
 
