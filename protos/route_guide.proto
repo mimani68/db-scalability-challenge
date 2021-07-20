@@ -10,7 +10,7 @@ option objc_class_prefix = "RTG";
 package routeguide;
 
 service RouteGuide {
-  rpc getUserDetails(stream UserRequest) returns (stream UserResponse) {}
+  rpc merchantList(stream UserRequest) returns (stream UserResponse) {}
 }
 
 message UserRequest {
@@ -27,5 +27,4 @@ message Payload {
 message UserResponse {
   string message = 1;
   optional Payload data = 2;
-  // optional google.protobuf.Any data = 2;
 }

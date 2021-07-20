@@ -16,8 +16,8 @@ import {
   initlizeDb
 } from './db/psql';
 import {
-  getUserDetails
-} from './route/user'
+  merchantList
+} from './route/merchant.router';
 
 
 /**
@@ -36,7 +36,7 @@ export function getServer() {
 
   let server = new Server();
   server.addService(routeguide.RouteGuide.service, {
-    getUserDetails: getUserDetails
+    merchantList
   });
   return server;
 }

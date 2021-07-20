@@ -1,9 +1,9 @@
 import { object, string } from "joi";
 
 import { UserRequestDto } from "../dto/user_detail.dto";
-import { findUserById   } from "../service/user.service";
+import { findMerchantsListInPeriod } from "../service/merchant.service";
 
-export function getUserDetails(call: any) {
+export function merchantList(call: any) {
   call.on('data', async function(req: UserRequestDto) {
     /*
     | 
@@ -48,7 +48,8 @@ export function getUserDetails(call: any) {
     | 03 Gathering data by service
     | 
     */
-    let data = await findUserById(req.id, req.time);
+    let t = req.time.split('_')
+    let data = await findMerchantsListInPeriod(req.id, t[0], t[1])
     call.write({
       data,
       message: 'User data'

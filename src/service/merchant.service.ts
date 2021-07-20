@@ -1,4 +1,4 @@
-import { Between, FindManyOptions } from 'typeorm';
+import { Between, FindManyOptions, getConnection } from 'typeorm';
 
 import config from '../config';
 import { db               } from '../db/psql';
@@ -7,6 +7,7 @@ import { log              } from '../utils/log';
 import { stringToUniqeKey } from '../utils/rnd_number';
 import { Merchant         } from '../entity/merchants';
 import { expireatAsync, getAsync, setAsync } from '../utils/redis';
+import { Transaction } from '../entity/tx';
 
 /**
  * @param  {string|number} userId
@@ -32,10 +33,22 @@ export async function findMerchantsListInPeriod(userId: string | number, start: 
 
   /*
   | 
-  | 02 Retrive data from db
+  | 02 The percentile ranking against all other users over that same time period
   | 
   */
-  let options: FindManyOptions<Merchant> = {
+  let percentileValueRanking = await getConnection()
+      .getRepository(Transaction)
+      .createQueryBuilder('typeOne')
+      .addSelect('sum (amount) as total')
+      .where('typeOne.user_id= :id', { id: userId })
+      .getOne();
+
+  /*
+  | 
+  | 03 Retrive data from db
+  | 
+  */
+  let optionAllMerchantList: FindManyOptions<Merchant> = {
     where: {
       transactions: {
         user_id: userId,
@@ -44,14 +57,20 @@ export async function findMerchantsListInPeriod(userId: string | number, start: 
     },
     lock: { mode: "optimistic", version: 1 }
   }
-  return await db.getRepository(Merchant).find(options)
+  return await db.getRepository(Merchant).find(optionAllMerchantList)
     .then( (value: any) => {
       if ( !value ) {
         return Promise.reject()
       }
       /*
       | 
-      | 03 Store cache for db
+      | 04 Percentile ranking
+      | 
+      */
+      value.rank = percentileValueRanking;
+      /*
+      | 
+      | 05 Store cache for db
       | 
       */
       setAsync(key, JSON.stringify(value))
