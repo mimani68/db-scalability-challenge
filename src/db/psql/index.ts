@@ -41,8 +41,9 @@ export function initlizeDb(url_master: string, ...url_salve: string[]) {
     entities: [ User, Transaction, Merchant ],
     synchronize: true,
     logging: false
-  }).then(connection => {
+  }).then(async connection => {
       db = connection
+      await connection.synchronize();
       console.log('=== Database connected ===')
   }).catch(error => {
     console.log(error)

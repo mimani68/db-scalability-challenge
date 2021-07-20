@@ -7,7 +7,6 @@ import { log              } from '../utils/log';
 import { stringToUniqeKey } from '../utils/rnd_number';
 import { Merchant         } from '../entity/merchants';
 import { expireatAsync, getAsync, setAsync } from '../utils/redis';
-import { Transaction } from '../entity/tx';
 
 /**
  * @param  {string|number} userId
@@ -36,12 +35,23 @@ export async function findMerchantsListInPeriod(userId: string | number, start: 
   | 02 The percentile ranking against all other users over that same time period
   | 
   */
-  let percentileValueRanking = await getConnection()
-      .getRepository(Transaction)
-      .createQueryBuilder('typeOne')
-      .addSelect('sum (amount) as total')
-      .where('typeOne.user_id= :id', { id: userId })
-      .getOne();
+  let userPayments = await getConnection()
+    .query(`
+    SELECT sum(amount)
+    FROM (SELECT user_id, amount
+    FROM transaction
+    WHERE user_id='${ +userId }') as a
+    GROUP BY user_id;
+    `)
+    .then(el => el[0])
+  let total = await getConnection()
+    .query(`
+    SELECT sum(amount)
+    FROM (SELECT user_id, amount
+    FROM transaction
+    GROUP BY user_id;
+    `)
+    .then(el => el[0])
 
   /*
   | 
@@ -67,7 +77,7 @@ export async function findMerchantsListInPeriod(userId: string | number, start: 
       | 04 Percentile ranking
       | 
       */
-      value.rank = percentileValueRanking;
+      value.rank = userPayments.sum / total.sum + 100 ;
       /*
       | 
       | 05 Store cache for db
