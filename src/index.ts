@@ -14,8 +14,6 @@ import {
 
 
 /**
- * Get a new server with the handler functions in this file bound to the methods
- * it serves.
  * @return {Server} The new server object
  */
 export function getServer() {
@@ -27,7 +25,7 @@ export function getServer() {
       defaults: true,
       oneofs: true
     });
-  let routeguide = loadPackageDefinition(packageDefinition).routeguide;
+  let routeguide: any = loadPackageDefinition(packageDefinition).routeguide;
 
   let server = new Server();
   server.addService(routeguide.RouteGuide.service, {
