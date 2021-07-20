@@ -67,7 +67,7 @@ services:
             DB_SLAVE_ONE_CONNECTION_URL: postgresql://repl_user:repl_password@192.168.1.104:5433/app
             DB_SLAVE_TWO_CONNECTION_URL: postgresql://repl_user:repl_password@192.168.1.104:5434/app
             DB_SLAVE_THREE_CONNECTION_URL: postgresql://repl_user:repl_password@192.168.1.104:5435/app
-            REDIS_URL: redis://redis:6379
+            REDIS_URL: redis://redis:6379?password=bnf9cU34naC9
         ports:
             - "9229:9229"
             - "5000:5000"
@@ -189,7 +189,6 @@ services:
         image: bitnami/redis:6.0-debian-10
         environment: 
             - REDIS_PASSWORD=bnf9cU34naC9
-            - ALLOW_EMPTY_PASSWORD=yes
         networks:
             - internal
 

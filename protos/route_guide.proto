@@ -2,14 +2,9 @@ syntax = "proto3";
 
 import "google/protobuf/any.proto";
 
-option java_multiple_files = true;
-option java_package = "io.grpc.examples.routeguide";
-option java_outer_classname = "RouteGuideProto";
-option objc_class_prefix = "RTG";
-
 package routeguide;
 
-service RouteGuide {
+service MerchantService {
   rpc merchantList(stream UserRequest) returns (stream UserResponse) {}
 }
 
@@ -18,13 +13,14 @@ message UserRequest {
   string time = 2;
 }
 
-message Payload {
-  string firstname = 1;
-  string lastname = 2;
-  optional string status = 3;
+message UserResponse {
+  string user_id = 1;
+  repeated Marchant merchants = 2;
+  optional string rank = 3;
 }
 
-message UserResponse {
-  string message = 1;
-  optional Payload data = 2;
+message Marchant {
+  string id = 1;
+  string display_name = 2;
+  string funny_gif_url = 3;
 }

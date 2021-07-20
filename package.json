@@ -28,6 +28,7 @@
     "@types/node": "^16.3.3",
     "@types/redis": "^2.8.31",
     "mocha": "^9.0.2",
+    "sinon": "^11.1.1",
     "typescript": "^4.3.5"
   },
   "keywords": [],

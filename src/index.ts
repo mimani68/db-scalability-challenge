@@ -35,7 +35,7 @@ export function getServer() {
   let routeguide: any = loadPackageDefinition(packageDefinition).routeguide;
 
   let server = new Server();
-  server.addService(routeguide.RouteGuide.service, {
+  server.addService(routeguide.MerchantService.service, {
     merchantList
   });
   return server;
