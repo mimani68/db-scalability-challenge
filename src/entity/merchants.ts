@@ -2,17 +2,17 @@ import { Entity, PrimaryGeneratedColumn, Column } from "typeorm";
 
 @Entity()
 export class Merchant {
-
+    
     @PrimaryGeneratedColumn()
-    id!: number;
+    id!: number | string;
 
     @Column()
-    firstName!: string;
+    display_name!: string;
 
     @Column()
-    lastName!: string;
+    icon_url!: string;
 
     @Column()
-    age!: number;
+    funny_gif_url!: string;
 
 }

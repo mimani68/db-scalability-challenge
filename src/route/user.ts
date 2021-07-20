@@ -18,9 +18,13 @@ export function getUserDetails(call: any) {
         message: 'Time peroid in necessory'
       })
     }
-    let e = await findUserById(req.id, req.time);
+    // let e = await findUserById(req.id, req.time);
     call.write({
-      data: e,
+      data: {
+        firstname: 'reza',
+        lastname: 'imani',
+        status: 'ACTIVE'
+      },
       message: 'salam'
     });
   });

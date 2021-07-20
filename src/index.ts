@@ -17,7 +17,7 @@ import {
 } from './db/psql';
 import {
   getUserDetails
-} from './route'
+} from './route/user'
 
 
 /**

@@ -1,18 +1,24 @@
 import { Entity, PrimaryGeneratedColumn, Column } from "typeorm";
 
 @Entity()
-export class Order {
+export class Transactions {
 
     @PrimaryGeneratedColumn()
     id!: number;
 
     @Column()
-    firstName!: string;
+    user_id!: string;
 
     @Column()
-    lastName!: string;
+    merchant_id!: string;
 
     @Column()
-    age!: number;
+    description!: string;
+
+    @Column()
+    amount!: number;
+
+    @Column()
+    date!: string;
 
 }

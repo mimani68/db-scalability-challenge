@@ -14,7 +14,6 @@ export function initlizeDb(url_master: string, ...url_salve: string[]) {
   for(let item of url_salve) {
     slaves_list.push({ url: item })
   }
-  console.log(resolve( process.cwd() + "/../../entity/*.js"))
   createConnection({
     type: "postgres",
     replication: {

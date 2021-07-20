@@ -10,7 +10,7 @@ option objc_class_prefix = "RTG";
 package routeguide;
 
 service RouteGuide {
-  rpc getUserDetails(string UserRequest) returns (string UserResponse) {}
+  rpc getUserDetails(stream UserRequest) returns (stream UserResponse) {}
 }
 
 message UserRequest {
@@ -21,10 +21,11 @@ message UserRequest {
 message Payload {
   string firstname = 1;
   string lastname = 2;
+  optional string status = 3;
 }
 
 message UserResponse {
   string message = 1;
-  // Payload optional data = 2;
-  repeated google.protobuf.Any data = 2;
+  optional Payload data = 2;
+  // optional google.protobuf.Any data = 2;
 }
