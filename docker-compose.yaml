@@ -50,14 +50,14 @@ services:
         restart: always
         labels:
             - "traefik.enable=true"
-            # - "traefik.http.routers.app.rule=Host(`fiberman.ir`)"
+            # - "traefik.http.routers.app.rule=Host(`app.io`)"
             - "traefik.http.routers.app.entrypoints=web"
             # - "traefik.http.routers.app.entrypoints=websecure"
             # - "traefik.http.routers.app.tls.certresolver=app"
             - "traefik.http.services.app.loadbalancer.server.port=5000"
         working_dir: /app
         environment:
-            PORT: 500
+            PORT: 5000
             NODE_ENV: development
             DB_MASTER_CONNECTION_URL: postgres://user:test@db_master:5432/app?authSource=admin
             DB_SLAVE_ONE_CONNECTION_URL: postgres://user:test@db_slave_one:5432/app?authSource=admin
