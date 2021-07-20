@@ -9,17 +9,17 @@ services:
     proxy:
         image: traefik:2.4
         command:
-            # - "--log.level=DEBUG"
+            - "--log.level=INFO"
             - "--api=true"
             - "--api.dashboard=true"
             - "--api.insecure=true"
             - "--providers.docker"
             - "--entrypoints.web.address=:80"
             # - "--entryPoints.websecure.address=:443"
-            # - "--certificatesResolvers.yas.acme.httpchallenge=true"
-            # - "--certificatesresolvers.yas.acme.httpchallenge.entrypoint=web"
-            # - "--certificatesresolvers.yas.acme.email=sample@localhost.ir"
-            # - "--certificatesresolvers.yas.acme.storage=/letsencrypt/acme.json"
+            # - "--certificatesResolvers.app.acme.httpchallenge=true"
+            # - "--certificatesresolvers.app.acme.httpchallenge.entrypoint=web"
+            # - "--certificatesresolvers.app.acme.email=sample@localhost.io"
+            # - "--certificatesresolvers.app.acme.storage=/letsencrypt/acme.json"
         volumes:
             - type: bind
               source: /var/run/docker.sock
@@ -51,18 +51,22 @@ services:
         labels:
             - "traefik.enable=true"
             # - "traefik.http.routers.app.rule=Host(`app.io`)"
-            - "traefik.http.routers.app.entrypoints=web"
-            # - "traefik.http.routers.app.entrypoints=websecure"
+            - "traefik.http.routers.app_rt.service=app_srv"
+            - "traefik.http.routers.app_rt.rule=Path(`/app/api`)"
+            - "traefik.http.routers.app_rt.middlewares=strip-url@docker"
+            # - "traefik.http.routers.app.entrypoints=web"
             # - "traefik.http.routers.app.tls.certresolver=app"
-            - "traefik.http.services.app.loadbalancer.server.port=5000"
+            - "traefik.http.services.app_srv.loadbalancer.server.port=5000"
+            - "traefik.http.services.app_srv.loadbalancer.server.scheme=h2c"
+            - "traefik.http.middlewares.strip-url.stripprefix.prefixes=/app/api"
         working_dir: /app
         environment:
             PORT: 5000
             NODE_ENV: development
-            DB_MASTER_CONNECTION_URL: postgres://user:test@db_master:5432/app?authSource=admin
-            DB_SLAVE_ONE_CONNECTION_URL: postgres://user:test@db_slave_one:5432/app?authSource=admin
-            DB_SLAVE_TWO_CONNECTION_URL: postgres://user:test@db_slave_two:5432/app?authSource=admin
-            DB_SLAVE_THREE_CONNECTION_URL: postgres://user:test@db_slave_three:5432/app?authSource=admin
+            DB_MASTER_CONNECTION_URL: postgres://user:test@db_master:5432/app
+            DB_SLAVE_ONE_CONNECTION_URL: postgres://user:test@db_slave_one:5432/app
+            DB_SLAVE_TWO_CONNECTION_URL: postgres://user:test@db_slave_two:5432/app
+            DB_SLAVE_THREE_CONNECTION_URL: postgres://user:test@db_slave_three:5432/app
         ports:
             - "9229:9229"
             - "5000:5000"
@@ -73,16 +77,16 @@ services:
         command: ["npm", "run", "start"]
 
     db_master:
-        image: postgres:12.3
+        image: docker.io/bitnami/postgresql:11
         restart: always
         environment:
-            POSTGRES_DB: app
-            POSTGRES_USER: user
-            POSTGRES_PASSWORD: test
-            # ALLOW_IP_RANGE: 0.0.0.0/0
-            # PGHOST: db
-            # PGDATABASE: postgres
-            # PGUSER: postgres
+            POSTGRESQL_REPLICATION_MODE: master
+            POSTGRESQL_REPLICATION_USER: repl_user
+            POSTGRESQL_REPLICATION_PASSWORD: repl_password
+            POSTGRESQL_USERNAME: user
+            POSTGRESQL_PASSWORD: test
+            POSTGRESQL_DATABASE: app
+            ALLOW_EMPTY_PASSWORD: 'no'
         healthcheck:
             test: ["CMD-SHELL", "pg_isready -U postgres"]
             interval: 10s
@@ -94,16 +98,18 @@ services:
             - internal
     
     db_slave_one:
-        image: postgres:12.3
+        image: docker.io/bitnami/postgresql:11
         restart: always
         environment:
-            POSTGRES_DB: app
-            POSTGRES_USER: user
-            POSTGRES_PASSWORD: test
-            # ALLOW_IP_RANGE: 0.0.0.0/0
-            # PGHOST: db
-            # PGDATABASE: postgres
-            # PGUSER: postgres
+            POSTGRESQL_REPLICATION_MODE: slave
+            POSTGRESQL_REPLICATION_USER: repl_user
+            POSTGRESQL_REPLICATION_PASSWORD: repl_password
+            POSTGRESQL_MASTER_HOST: db_master
+            POSTGRESQL_PASSWORD: test
+            POSTGRESQL_MASTER_PORT_NUMBER: 5432
+            ALLOW_EMPTY_PASSWORD: 'no'
+        depends_on:
+            - db_master
         healthcheck:
             test: ["CMD-SHELL", "pg_isready -U postgres"]
             interval: 10s
@@ -115,16 +121,18 @@ services:
             - internal
 
     db_slave_two:
-        image: postgres:12.3
+        image: docker.io/bitnami/postgresql:11
         restart: always
         environment:
-            POSTGRES_DB: app
-            POSTGRES_USER: user
-            POSTGRES_PASSWORD: test
-            # ALLOW_IP_RANGE: 0.0.0.0/0
-            # PGHOST: db
-            # PGDATABASE: postgres
-            # PGUSER: postgres
+            POSTGRESQL_REPLICATION_MODE: slave
+            POSTGRESQL_REPLICATION_USER: repl_user
+            POSTGRESQL_REPLICATION_PASSWORD: repl_password
+            POSTGRESQL_MASTER_HOST: db_master
+            POSTGRESQL_PASSWORD: test
+            POSTGRESQL_MASTER_PORT_NUMBER: 5432
+            ALLOW_EMPTY_PASSWORD: 'no'
+        depends_on:
+            - db_master
         healthcheck:
             test: ["CMD-SHELL", "pg_isready -U postgres"]
             interval: 10s
@@ -136,16 +144,18 @@ services:
             - internal
 
     db_slave_three:
-        image: postgres:12.3
+        image: docker.io/bitnami/postgresql:11
         restart: always
         environment:
-            POSTGRES_DB: app
-            POSTGRES_USER: user
-            POSTGRES_PASSWORD: test
-            # ALLOW_IP_RANGE: 0.0.0.0/0
-            # PGHOST: db
-            # PGDATABASE: postgres
-            # PGUSER: postgres
+            POSTGRESQL_REPLICATION_MODE: slave
+            POSTGRESQL_REPLICATION_USER: repl_user
+            POSTGRESQL_REPLICATION_PASSWORD: repl_password
+            POSTGRESQL_MASTER_HOST: db_master
+            POSTGRESQL_PASSWORD: test
+            POSTGRESQL_MASTER_PORT_NUMBER: 5432
+            ALLOW_EMPTY_PASSWORD: 'no'
+        depends_on:
+            - db_master
         healthcheck:
             test: ["CMD-SHELL", "pg_isready -U postgres"]
             interval: 10s
@@ -157,7 +167,7 @@ services:
             - internal
 
     adminer:
-        image: ${ADMINER_IMAGE}
+        image: adminer:latest
         restart: always
         labels:
             - "traefik.enable=true"

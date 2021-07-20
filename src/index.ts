@@ -49,12 +49,12 @@ if (require.main === module) {
       throw new Error(err)
     }
     routeServer.start();
-    // initlizeDb(
-    //   config.DB_MASTER_CONNECTION_URL,
-    //   config.DB_SLAVE_ONE_CONNECTION_URL,
-    //   config.DB_SLAVE_TWO_CONNECTION_URL,
-    //   config.DB_SLAVE_THREE_CONNECTION_URL
-    // );
+    initlizeDb(
+      config.DB_MASTER_CONNECTION_URL,
+      config.DB_SLAVE_ONE_CONNECTION_URL,
+      config.DB_SLAVE_TWO_CONNECTION_URL,
+      config.DB_SLAVE_THREE_CONNECTION_URL
+    );
     console.log(`
 -------------------------------------------------------
   ${ greenBright(process.env.npm_package_name)}: v${ process.env.npm_package_version }

@@ -1,5 +1,10 @@
+import { db } from "../db/psql";
+import { User } from "../entity/users";
+
 export function getUserDetails(call: any) {
-  call.on('data', function(note: any) {
+  call.on('data', async function(note: any) {
+    let e = await db.getRepository(User).find();
+    console.log('[debug]', e)
     call.write({
       location: {
         latitude: 12,
