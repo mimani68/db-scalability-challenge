@@ -1,7 +1,10 @@
-import { Entity, PrimaryGeneratedColumn, Column } from "typeorm";
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from "typeorm";
+
+import { Merchant } from "./merchants";
+import { User } from "./users";
 
 @Entity()
-export class Transactions {
+export class Transaction {
 
     @PrimaryGeneratedColumn()
     id!: number;
@@ -20,5 +23,11 @@ export class Transactions {
 
     @Column()
     date!: string;
+
+    @ManyToOne(() => User, el => el.transactions)
+    user!: User;
+
+    @ManyToOne(() => Merchant, el => el.transactions)
+    merchant!: Merchant;
 
 }
