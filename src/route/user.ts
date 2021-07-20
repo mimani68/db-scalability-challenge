@@ -51,7 +51,7 @@ export function getUserDetails(call: any) {
     let data = await findUserById(req.id, req.time);
     call.write({
       data,
-      message: 'salam'
+      message: 'User data'
     });
   });
   call.on('end', function() {
