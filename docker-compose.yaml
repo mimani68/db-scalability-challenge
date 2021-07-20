@@ -50,35 +50,122 @@ services:
         restart: always
         labels:
             - "traefik.enable=true"
-            - "traefik.http.routers.app.rule=Host(`fiberman.ir`)"
+            # - "traefik.http.routers.app.rule=Host(`fiberman.ir`)"
             - "traefik.http.routers.app.entrypoints=web"
             # - "traefik.http.routers.app.entrypoints=websecure"
             # - "traefik.http.routers.app.tls.certresolver=app"
-            - "traefik.http.services.app.loadbalancer.server.port=3000"
+            - "traefik.http.services.app.loadbalancer.server.port=5000"
         working_dir: /app
         environment:
-            PORT: 3000
+            PORT: 500
             NODE_ENV: development
-            DB_CONNECTION_URL: mongodb://user:test@db:27017/app?authSource=admin
+            DB_MASTER_CONNECTION_URL: postgres://user:test@db_master:5432/app?authSource=admin
+            DB_SLAVE_ONE_CONNECTION_URL: postgres://user:test@db_slave_one:5432/app?authSource=admin
+            DB_SLAVE_TWO_CONNECTION_URL: postgres://user:test@db_slave_two:5432/app?authSource=admin
+            DB_SLAVE_THREE_CONNECTION_URL: postgres://user:test@db_slave_three:5432/app?authSource=admin
         ports:
             - "9229:9229"
+            - "5000:5000"
         volumes:
             - ./:/app
         networks:
             - internal
-        command: ["npm", "run", "dev"]
-        
-    db:
-        image: mongo:4.0.20-xenial
+        command: ["npm", "run", "start"]
+
+    db_master:
+        image: postgres:12.3
+        restart: always
         environment:
-            MONGO_INITDB_ROOT_USERNAME: user
-            MONGO_INITDB_ROOT_PASSWORD: test
-        volumes:
-            - mongodb-data:/data/db
+            POSTGRES_DB: app
+            POSTGRES_USER: user
+            POSTGRES_PASSWORD: test
+            # ALLOW_IP_RANGE: 0.0.0.0/0
+            # PGHOST: db
+            # PGDATABASE: postgres
+            # PGUSER: postgres
+        healthcheck:
+            test: ["CMD-SHELL", "pg_isready -U postgres"]
+            interval: 10s
+            timeout: 5s
+            retries: 5
+        # volumes:
+        #     - postgres-data:/var/lib/postgresql/data
         networks:
             - internal
-        ports:
-            - "27017:27017"
+    
+    db_slave_one:
+        image: postgres:12.3
+        restart: always
+        environment:
+            POSTGRES_DB: app
+            POSTGRES_USER: user
+            POSTGRES_PASSWORD: test
+            # ALLOW_IP_RANGE: 0.0.0.0/0
+            # PGHOST: db
+            # PGDATABASE: postgres
+            # PGUSER: postgres
+        healthcheck:
+            test: ["CMD-SHELL", "pg_isready -U postgres"]
+            interval: 10s
+            timeout: 5s
+            retries: 5
+        # volumes:
+        #     - postgres-data:/var/lib/postgresql/data
+        networks:
+            - internal
+
+    db_slave_two:
+        image: postgres:12.3
+        restart: always
+        environment:
+            POSTGRES_DB: app
+            POSTGRES_USER: user
+            POSTGRES_PASSWORD: test
+            # ALLOW_IP_RANGE: 0.0.0.0/0
+            # PGHOST: db
+            # PGDATABASE: postgres
+            # PGUSER: postgres
+        healthcheck:
+            test: ["CMD-SHELL", "pg_isready -U postgres"]
+            interval: 10s
+            timeout: 5s
+            retries: 5
+        # volumes:
+        #     - postgres-data:/var/lib/postgresql/data
+        networks:
+            - internal
+
+    db_slave_three:
+        image: postgres:12.3
+        restart: always
+        environment:
+            POSTGRES_DB: app
+            POSTGRES_USER: user
+            POSTGRES_PASSWORD: test
+            # ALLOW_IP_RANGE: 0.0.0.0/0
+            # PGHOST: db
+            # PGDATABASE: postgres
+            # PGUSER: postgres
+        healthcheck:
+            test: ["CMD-SHELL", "pg_isready -U postgres"]
+            interval: 10s
+            timeout: 5s
+            retries: 5
+        # volumes:
+        #     - postgres-data:/var/lib/postgresql/data
+        networks:
+            - internal
+
+    adminer:
+        image: ${ADMINER_IMAGE}
+        restart: always
+        labels:
+            - "traefik.enable=true"
+            - "traefik.http.routers.storage.rule=Host(`db.localhost`) && PathPrefix(`/adminer`)"
+            - "traefik.http.services.storage.loadbalancer.server.port=8080"
+            - "traefik.http.routers.storage.entrypoints=web"
+        networks:
+            - internal
 
 volumes:
-    mongodb-data:
+    postgres-data:
